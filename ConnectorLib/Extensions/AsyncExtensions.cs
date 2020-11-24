@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace InstallerCL.Extensions
+namespace ConnectorLib.Extensions
 {
     public static class AsyncExtensions
     {

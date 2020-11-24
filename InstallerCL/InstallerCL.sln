@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.1000
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InstallerCL", "InstallerCL.csproj", "{2D6B7E2C-7A6B-4ADF-B7DD-55AF6A611BE2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorLib", "..\ConnectorLib\ConnectorLib.csproj", "{AB2CAC99-51FA-4474-A7AC-66570A021931}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{2D6B7E2C-7A6B-4ADF-B7DD-55AF6A611BE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D6B7E2C-7A6B-4ADF-B7DD-55AF6A611BE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D6B7E2C-7A6B-4ADF-B7DD-55AF6A611BE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB2CAC99-51FA-4474-A7AC-66570A021931}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB2CAC99-51FA-4474-A7AC-66570A021931}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB2CAC99-51FA-4474-A7AC-66570A021931}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB2CAC99-51FA-4474-A7AC-66570A021931}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
