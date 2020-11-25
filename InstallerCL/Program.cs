@@ -20,7 +20,7 @@ namespace InstallerCL
             {
                 var udpClient = new UdpClient();
 
-                udpClient.Connect("127.0.0.1", 5003);
+                udpClient.Connect("127.0.0.1", 5100);
 
                 do
                 {
