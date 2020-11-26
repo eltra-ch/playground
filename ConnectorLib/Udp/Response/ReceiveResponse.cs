@@ -1,8 +1,8 @@
 ﻿using System.Net;
 
-namespace InstallerSR
+namespace ConnectorLib.Udp.Response
 {
-    class ReceiveResponse
+    public class ReceiveResponse
     {
         public string Text { get; set; }
         public IPEndPoint Endpoint { get; set; }

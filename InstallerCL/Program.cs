@@ -4,66 +4,70 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ConnectorLib.Extensions;
+using ConnectorLib.Udp;
+using ConnectorLib.Udp.Response;
 
 namespace InstallerCL
 {
     class Program
     {
+        private static Stopwatch _stopwatch;
+
+        private static int _counter;
+
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
 
-            var tokenSource = new CancellationTokenSource();
+            var udpClient = new EltraUdpClient();
+            
+            udpClient.ResponseReceived += OnResponseReceived;
+            udpClient.ErrorRaised += OnErrorRaised;
 
             var clientTask = Task.Run(async () =>
             {
-                var udpClient = new UdpClient();
-
-                udpClient.Connect("127.0.0.1", 5100);
-
-                do
+                do 
                 {
                     try
                     {
                         string hello = "hello server";
-                        UTF8Encoding enc = new UTF8Encoding();
-                        var bytes = enc.GetBytes(hello);
+                        
+                        _stopwatch = new Stopwatch();
 
-                        var stopwatch = new Stopwatch();
+                        _stopwatch.Start();
 
-                        stopwatch.Start();
-
-                        var bytesSent = await udpClient.SendAsync(bytes, bytes.Length).WithCancellation(tokenSource.Token);
+                        var bytesSent = await udpClient.Send(hello);
 
                         if (bytesSent <= 0)
                         {
                             break;
-                        }
-                        else
-                        {
-                            var receiveResult = await udpClient.ReceiveAsync().WithCancellation(tokenSource.Token); 
-
-                            string txt = enc.GetString(receiveResult.Buffer, 0, receiveResult.Buffer.Length);
-
-                            Console.WriteLine($"{txt} - time {stopwatch.ElapsedTicks} ticks");
                         }
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
                     }
-                    
+
                     await Task.Delay(100);
                 }
-                while (!tokenSource.IsCancellationRequested);
+                while (!udpClient.IsCanceled);
             });
 
             Console.ReadKey();
 
-            tokenSource.Cancel();
+            udpClient.Cancel();
 
             clientTask.Wait();
+        }
+
+        private static void OnErrorRaised(object sender, SocketError e)
+        {
+            Console.WriteLine($"ERROR: error code = {e}");
+        }
+
+        private static void OnResponseReceived(object sender, ReceiveResponse e)
+        {
+            Console.WriteLine($"{e.Text} - time {_stopwatch.ElapsedMilliseconds} ms, counter {++_counter}");
         }
     }
 }

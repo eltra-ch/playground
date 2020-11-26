@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConnectorLib.Udp;
+using System;
 
 namespace InstallerSR
 {
@@ -8,7 +9,7 @@ namespace InstallerSR
         {
             Console.WriteLine("Hello World!");
 
-            var server = new EltraUdpServer() { Host = "127.0.0.1" };
+            var server = new DummyServer() { Host = "127.0.0.1" };
 
             server.Start();
 
