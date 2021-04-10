@@ -8,16 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="App.ico" />
     <None Remove="app.manifest" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="app.manifest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="App.ico" />
   </ItemGroup>
 
   <ItemGroup>
