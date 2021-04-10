@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TrayIconSample {
+namespace SnoopNotify {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace TrayIconSample {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TrayIconSample.AppResource", typeof(AppResource).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SnoopNotify.AppResource", typeof(AppResource).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
