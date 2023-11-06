@@ -51,32 +51,41 @@ namespace DS18B20.Ds18
         {
             const string method = "ReadAllDevices";
             bool result = false;
-            var devicesPath = Directory.EnumerateDirectories(DsDefinitions.w1Path, "28*");
 
             deviceNames = new List<string>();
 
-            if (devicesPath.Any())
+            try
             {
-                MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"Search in {DsDefinitions.w1Path}, found = {devicesPath.Count()}");
+                var devicesPath = Directory.EnumerateDirectories(DsDefinitions.w1Path, "28*");
 
-                foreach (var devicePath in devicesPath)
+                if (devicesPath.Any())
                 {
-                    MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"Search in {devicePath}");
+                    MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"Search in {DsDefinitions.w1Path}, found = {devicesPath.Count()}");
 
-                    if (Directory.Exists(devicePath))
+                    foreach (var devicePath in devicesPath)
                     {
-                        var deviceDirInfo = new DirectoryInfo(devicePath);
-                        string deviceName = deviceDirInfo.Name;
+                        MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"Search in {devicePath}");
 
-                        deviceNames.Add(deviceName);
+                        if (Directory.Exists(devicePath))
+                        {
+                            var deviceDirInfo = new DirectoryInfo(devicePath);
+                            string deviceName = deviceDirInfo.Name;
 
-                        result = true;
+                            deviceNames.Add(deviceName);
+
+                            result = true;
+                        }
                     }
                 }
+                else
+                {
+                    MsgLogger.WriteError($"{GetType().Name} - {method}", $"no devices found");
+                }
             }
-            else
+            catch(Exception e)
             {
-                MsgLogger.WriteError($"{GetType().Name} - {method}", $"no devices found");
+                MsgLogger.Exception($"{GetType().Name} - {method}", e);
+                result = false;
             }
 
             return result;

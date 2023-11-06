@@ -1,6 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using DS18B20;
 using DS18B20.Ds18;
 using EltraCommon.Logger;
 using System.Reflection;
@@ -39,5 +38,3 @@ var options = new JsonSerializerOptions
 var json = JsonSerializer.Serialize(measures, options);
 
 MsgLogger.WriteLine(json);
-
-
