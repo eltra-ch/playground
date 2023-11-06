@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "DS18B20": {
+      "commandName": "Project",
+      "remoteDebugEnabled": true,
+      "authenticationMode": "None"
+    }
+  }
+}
