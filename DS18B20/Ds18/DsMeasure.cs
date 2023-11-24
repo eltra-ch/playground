@@ -1,8 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using DS18B20.Ds18.Interfaces;
+using System.Text.Json.Serialization;
 
 namespace DS18B20.Ds18
 {
-    public class DsDeviceMeasure
+    public class DsMeasure : IDsMeasure
     {
         [JsonPropertyName("temperature")]
         public double Temperature { get; set; }

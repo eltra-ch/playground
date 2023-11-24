@@ -1,66 +1,88 @@
-﻿using EltraCommon.Logger;
+﻿using DS18B20.Ds18.Interfaces;
+using EltraCommon.Logger;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DS18B20.Ds18
 {
-    internal class DsDevices
+    public class DsDevices : IDsDevices
     {
-        public List<string> DeviceNames
+        private readonly IDsDevice? _device;
+        private List<IDsDevice>? _activeDevices;
+
+        public DsDevices()
+        {
+        }
+
+        public DsDevices(IDsDevice device)
+        {
+            _device = device;
+        }
+
+        [JsonPropertyName("devices")]
+        public List<IDsDevice> ActiveDevices
         {
             get
             {
-                var result = new List<string>();
-
-                if (ReadAllDevices(out var deviceNames))
-                {
-                    result = deviceNames;
-                }
-
-                return result;
+                return _activeDevices ?? (_activeDevices = CreateDevicesLists());
             }
         }
 
-        public bool Read(string deviceName, out DsDeviceMeasure? measure)
+        private List<IDsDevice> CreateDevicesLists()
         {
-            const string method = "Read";
+            var result = new List<IDsDevice>();
 
-            bool result = false;
-            var slaveFile = new DsSlaveFile();
-
-            measure = null;
-
-            if (!slaveFile.GetMeasure(deviceName, out var mea))
+            if (ReadAllDevices(out var deviceNames))
             {
-                MsgLogger.WriteError($"{GetType().Name} - {method}", $"Read temperature from device {deviceName} failed!");
-                result = false;
-            }
-            else if (mea != null)
-            {
-                measure = mea;
-                MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"device = '{deviceName}', temperature = '{measure.Temperature} °C'");
-                result = true;
-            }
-            else
-            {
-                MsgLogger.WriteError($"{GetType().Name} - {method}", $"Device {deviceName} get measure failed!");
+                result = deviceNames;
             }
 
             return result;
         }
 
-        private bool ReadAllDevices(out List<string> deviceNames)
+        public bool SerializeToJson()
+        {
+            const string method = "SerializeToJson";
+
+            bool result = false;
+
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                };
+
+                var json = JsonSerializer.Serialize(this, options);
+
+                MsgLogger.WriteDebug($"{GetType().Name} - {method}", json);
+
+                result = !string.IsNullOrEmpty(json);
+            }
+            catch(Exception e)
+            {
+                MsgLogger.Exception($"{GetType().Name} - {method}", e);
+            }
+
+            return result;
+        }
+
+        private bool ReadAllDevices(out List<IDsDevice> deviceNames)
         {
             const string method = "ReadAllDevices";
             bool result = false;
 
-            deviceNames = new List<string>();
+            deviceNames = new List<IDsDevice>();
 
             try
             {
-                var devicesPath = Directory.EnumerateDirectories(DsDefinitions.w1Path, "28*");
+                var devicesPath = Directory.EnumerateDirectories(DsDefinitions.W1Path, "28*");
 
                 if (devicesPath.Any())
                 {
-                    MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"Search in {DsDefinitions.w1Path}, found = {devicesPath.Count()}");
+                    MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"Search in {DsDefinitions.W1Path}, found = {devicesPath.Count()}");
 
                     foreach (var devicePath in devicesPath)
                     {
@@ -71,7 +93,7 @@ namespace DS18B20.Ds18
                             var deviceDirInfo = new DirectoryInfo(devicePath);
                             string deviceName = deviceDirInfo.Name;
 
-                            deviceNames.Add(deviceName);
+                            AddDevice(deviceNames, deviceName);
 
                             result = true;
                         }
@@ -86,6 +108,33 @@ namespace DS18B20.Ds18
             {
                 MsgLogger.Exception($"{GetType().Name} - {method}", e);
                 result = false;
+            }
+
+            return result;
+        }
+
+        private void AddDevice(List<IDsDevice> deviceNames, string deviceName)
+        {
+            if (_device != null && !string.IsNullOrEmpty(deviceName))
+            {
+                IDsDevice? device = CreateDevice(_device.GetType(), deviceName);
+
+                if (device != null)
+                {
+                    deviceNames.Add(device);
+                }
+            }
+        }
+
+        private static IDsDevice? CreateDevice(Type deviceType, string deviceName)
+        {
+            IDsDevice? result = null;
+            
+            if(Activator.CreateInstance(deviceType) is IDsDevice device)
+            {   
+                device.Name = deviceName;
+
+                result = device;
             }
 
             return result;
