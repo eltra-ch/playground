@@ -1,10 +1,10 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using DS18B20.Ds18;
+using DS18B20.Ds18.Interfaces;
 using EltraCommon.Logger;
 using System.Reflection;
-using System.Text.Encodings.Web;
-using System.Text.Json;
+using Unity;
 
 MsgLogger.LogLevels = "Error;Warning;Exception;Info";
 MsgLogger.LogOutputs = MsgLogger.SupportedLogOutputs;
@@ -14,27 +14,22 @@ var version = Assembly.GetExecutingAssembly().GetName().Version;
 
 MsgLogger.WriteLine($"{name}", $"{name}, {version}");
 
-var devices = new DsDevices();
-var measures = new DsMeasures();
+IUnityContainer unityContainer = new UnityContainer();
 
-foreach(var deviceName in devices.DeviceNames)
+unityContainer.RegisterType<IDsDevices, DsDevices>();
+unityContainer.RegisterType<IDsDevice, DsDevice>();
+unityContainer.RegisterType<IDsMeasure, DsMeasure>();
+
+var devices = unityContainer.Resolve<IDsDevices>();
+
+foreach(var device in devices.ActiveDevices)
 {
-    MsgLogger.WriteLine($"{name}", $"read device = '{deviceName}'...");
+    MsgLogger.WriteLine($"{name}", $"read device = '{device}'...");
 
-    if (devices.Read(deviceName, out var measure) && measure != null)
+    if (device.Read(out var measure) && measure != null)
     {
-        measures.AddMeasure(deviceName, measure);
-
-        MsgLogger.WriteLine($"{name}", $"device = '{deviceName}', temperature = '{measure.Temperature} {measure.Unit}', time = {measure.Created}");
+        MsgLogger.WriteLine($"{name}", $"device = '{device.Name}', temperature = '{measure.Temperature} {measure.Unit}', time = {measure.Created}");
     }
 }
 
-var options = new JsonSerializerOptions
-{
-    WriteIndented = true,
-    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-};
-
-var json = JsonSerializer.Serialize(measures, options);
-
-MsgLogger.WriteLine(json);
+devices.SerializeToJson();
