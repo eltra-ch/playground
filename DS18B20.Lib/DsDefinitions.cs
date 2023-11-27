@@ -1,4 +1,4 @@
-﻿namespace DS18B20.Ds18
+﻿namespace DS18B20.Lib
 {
     internal static class DsDefinitions
     {

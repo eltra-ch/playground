@@ -1,4 +1,4 @@
-﻿namespace DS18B20.Ds18.Interfaces
+﻿namespace DS18B20.Lib.Interfaces
 {
     public interface IDsMeasure
     {
@@ -7,5 +7,7 @@
         string Unit { get; set; }
 
         DateTime Created { get; set; }
+
+        bool GetMeasure(string source);
     }
 }

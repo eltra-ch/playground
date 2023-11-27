@@ -1,24 +1,37 @@
-﻿using DS18B20.Ds18.Interfaces;
+﻿using DS18B20.Lib.Interfaces;
 using EltraCommon.Logger;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace DS18B20.Ds18
+namespace DS18B20.Lib
 {
     public class DsDevices : IDsDevices
     {
-        private readonly IDsDevice? _device;
+        #region Private fields
+
+        private readonly IDsBuilder? _builder;
+        private readonly IDsDirectory? _directory;
+
         private List<IDsDevice>? _activeDevices;
+        
+        #endregion
+
+        #region Constructors
 
         public DsDevices()
         {
         }
 
-        public DsDevices(IDsDevice device)
+        public DsDevices(IDsBuilder builder, IDsDirectory directory)
         {
-            _device = device;
+            _builder = builder;
+            _directory = directory;
         }
+
+        #endregion
+
+        #region Properties
 
         [JsonPropertyName("devices")]
         public List<IDsDevice> ActiveDevices
@@ -29,17 +42,9 @@ namespace DS18B20.Ds18
             }
         }
 
-        private List<IDsDevice> CreateDevicesLists()
-        {
-            var result = new List<IDsDevice>();
+        #endregion
 
-            if (ReadAllDevices(out var deviceNames))
-            {
-                result = deviceNames;
-            }
-
-            return result;
-        }
+        #region Methods
 
         public bool SerializeToJson()
         {
@@ -69,6 +74,20 @@ namespace DS18B20.Ds18
             return result;
         }
 
+        #region Private methods
+
+        private List<IDsDevice> CreateDevicesLists()
+        {
+            var result = new List<IDsDevice>();
+
+            if (ReadAllDevices(out var deviceNames))
+            {
+                result = deviceNames;
+            }
+
+            return result;
+        }
+
         private bool ReadAllDevices(out List<IDsDevice> deviceNames)
         {
             const string method = "ReadAllDevices";
@@ -76,9 +95,12 @@ namespace DS18B20.Ds18
 
             deviceNames = new List<IDsDevice>();
 
+            if(_directory == null)
+                return false;
+
             try
             {
-                var devicesPath = Directory.EnumerateDirectories(DsDefinitions.W1Path, "28*");
+                var devicesPath = _directory.EnumerateDirectories(DsDefinitions.W1Path, "28*");
 
                 if (devicesPath.Any())
                 {
@@ -88,10 +110,9 @@ namespace DS18B20.Ds18
                     {
                         MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"Search in {devicePath}");
 
-                        if (Directory.Exists(devicePath))
+                        if (_directory.DirectoryExists(devicePath))
                         {
-                            var deviceDirInfo = new DirectoryInfo(devicePath);
-                            string deviceName = deviceDirInfo.Name;
+                            string deviceName = _directory.GetDirectoryName(devicePath);
 
                             AddDevice(deviceNames, deviceName);
 
@@ -115,9 +136,9 @@ namespace DS18B20.Ds18
 
         private void AddDevice(List<IDsDevice> deviceNames, string deviceName)
         {
-            if (_device != null && !string.IsNullOrEmpty(deviceName))
+            if (!string.IsNullOrEmpty(deviceName))
             {
-                IDsDevice? device = CreateDevice(_device.GetType(), deviceName);
+                IDsDevice? device = CreateDevice(deviceName);
 
                 if (device != null)
                 {
@@ -126,18 +147,25 @@ namespace DS18B20.Ds18
             }
         }
 
-        private static IDsDevice? CreateDevice(Type deviceType, string deviceName)
+        private IDsDevice? CreateDevice(string deviceName)
         {
             IDsDevice? result = null;
-            
-            if(Activator.CreateInstance(deviceType) is IDsDevice device)
-            {   
-                device.Name = deviceName;
 
-                result = device;
+            if (_builder != null)
+            {
+                result = _builder.BuildDevice();
+
+                if (result != null)
+                {
+                    result.Name = deviceName;
+                }
             }
-
+            
             return result;
         }
+
+        #endregion
+
+        #endregion
     }
 }

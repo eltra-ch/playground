@@ -1,4 +1,4 @@
-﻿namespace DS18B20.Ds18.Interfaces
+﻿namespace DS18B20.Lib.Interfaces
 {
     public interface IDsDevices
     {

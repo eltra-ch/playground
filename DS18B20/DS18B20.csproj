@@ -9,7 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="Eltra.Common.Logger" Version="1.0.0" />
-    <PackageReference Include="Unity.Container" Version="5.11.*"/>
+    <PackageReference Include="Unity.Container" Version="5.11.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DS18B20.Lib\DS18B20.Lib.csproj" />
   </ItemGroup>
 
 </Project>

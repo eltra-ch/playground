@@ -1,15 +1,28 @@
-﻿using DS18B20.Ds18.Interfaces;
+﻿using DS18B20.Lib.Interfaces;
 using EltraCommon.Logger;
 using System.Text.Json.Serialization;
 
-namespace DS18B20.Ds18
+namespace DS18B20.Lib
 {
     public class DsDevice : IDsDevice
     {
+        #region Private fields
+
+        private readonly IDsBuilder? _builder;
+        private readonly IDsDirectory? _directory;
+
+        #endregion
+
         #region Constr
 
         public DsDevice()
         {
+        }
+
+        public DsDevice(IDsBuilder builder, IDsDirectory directory)
+        {
+            _builder = builder;
+            _directory = directory;
         }
 
         #endregion
@@ -26,20 +39,7 @@ namespace DS18B20.Ds18
 
         #region Methods
 
-        private bool AddMeasure(IDsMeasure? measure)
-        {
-            bool result = false;
-
-            if (measure != null)
-            {
-                Measures.Add(measure);
-                result = true;
-            }
-
-            return result;
-        }
-
-        public bool Read(out IDsMeasure? measure)
+        public bool GetMeasure(out IDsMeasure? measure)
         {
             const string method = "Read";
 
@@ -49,7 +49,7 @@ namespace DS18B20.Ds18
 
             if (!string.IsNullOrEmpty(Name))
             {
-                if (!GetMeasure(out var mea))
+                if (!ReadMeasure(out var mea))
                 {
                     MsgLogger.WriteError($"{GetType().Name} - {method}", $"Read temperature from device {Name} failed!");
                     result = false;
@@ -74,7 +74,32 @@ namespace DS18B20.Ds18
             return result;
         }
 
-        public bool GetMeasure(out IDsMeasure? measure)
+        private bool AddMeasure(IDsMeasure? measure)
+        {
+            bool result = false;
+
+            if (measure != null)
+            {
+                Measures.Add(measure);
+                result = true;
+            }
+
+            return result;
+        }
+
+        private IDsMeasure? CreateMeasure()
+        {
+            IDsMeasure? result = null;
+
+            if (_builder!= null)
+            {
+                result = _builder.BuildMeasure();
+            }
+
+            return result;
+        }
+
+        private bool ReadMeasure(out IDsMeasure? measure)
         {
             const string method = "ReadSlaveFile";
             const string slaveFileName = "w1_slave";
@@ -83,14 +108,19 @@ namespace DS18B20.Ds18
 
             measure = null;
 
+            if (_directory == null)
+                return false;
+
             if (!string.IsNullOrEmpty(Name))
             {
                 string devicePath = Path.Combine(DsDefinitions.W1Path, Name);
                 string slaveFilePath = Path.Combine(devicePath, slaveFileName);
 
-                if (File.Exists(slaveFilePath))
+                if (_directory.FileExists(slaveFilePath))
                 {
-                    if (!GetMeasure(slaveFilePath, out var dsMeasure))
+                    var dsMeasure = CreateMeasure();
+
+                    if (dsMeasure != null && !dsMeasure.GetMeasure(slaveFilePath))
                     {
                         MsgLogger.WriteError($"{GetType().Name} - {method}", $"Read temperature from '{slaveFilePath}' failed!");
                     }
@@ -115,46 +145,6 @@ namespace DS18B20.Ds18
             else
             {
                 MsgLogger.WriteError($"{GetType().Name} - {method}", $"device name is empty!");
-            }
-
-            return result;
-        }
-
-        public bool GetMeasure(string slaveFilePath, out IDsMeasure? measure)
-        {
-            const string method = "ReadTemperature";
-            bool result = false;
-            measure = null;
-
-            MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"Found device = {Name}, slave file = {slaveFilePath}");
-
-            var content = File.ReadAllText(slaveFilePath);
-
-            var prefix = "t=";
-            int i = content.LastIndexOf(prefix, StringComparison.OrdinalIgnoreCase);
-
-            if (i > 0)
-            {
-                var temp = content.Substring(i + prefix.Length);
-
-                if (int.TryParse(temp, out int temperature))
-                {
-                    double tempCel = (double)Math.Round((decimal)temperature / 1000, 2);
-
-                    MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"device = '{Name}', temperature = '{tempCel} °C'");
-
-                    measure = new DsMeasure() { Temperature = tempCel };
-
-                    result = true;
-                }
-                else
-                {
-                    MsgLogger.WriteError($"{GetType().Name} - {method}", $"cannot parse temperature from text = {temp}");
-                }
-            }
-            else
-            {
-                MsgLogger.WriteError($"{GetType().Name} - {method}", $"temp not found in file {slaveFilePath}");
             }
 
             return result;
