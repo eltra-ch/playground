@@ -1,7 +1,9 @@
 ﻿using DS18B20.Lib.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DS18B20.Tests
 {
+    [ExcludeFromCodeCoverage]
     internal class DsDirectoryMock : IDsDirectory
     {
         public bool DirectoryExists(string? path)
