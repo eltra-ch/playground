@@ -25,6 +25,18 @@ unityContainer.RegisterType<IDsMeasure, DsMeasure>();
 
 var devices = unityContainer.Resolve<IDsDevices>();
 
+string file = "data.txt";
+
+if (File.Exists(file))
+{
+    string content = File.ReadAllText(file);
+
+    if (devices.Deserialize(SerializeMethod.Json, content, out var d) && d != null)
+    {
+        d.CopyTo(devices);
+    }
+}
+
 foreach(var device in devices.ActiveDevices)
 {
     MsgLogger.WriteLine($"{name}", $"read device = '{device}'...");
@@ -35,4 +47,6 @@ foreach(var device in devices.ActiveDevices)
     }
 }
 
-devices.SerializeToJson();
+devices.Serialize(SerializeMethod.Json, out var target);
+
+File.WriteAllText(file, target);

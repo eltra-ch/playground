@@ -19,6 +19,14 @@ namespace DS18B20.Lib
         {
         }
 
+        public DsDevice(List<DsMeasure> measures)
+        {
+            foreach (var measure in measures)
+            {
+                Measures.Add(measure);
+            }
+        }
+
         public DsDevice(IDsBuilder builder, IDsDirectory directory)
         {
             _builder = builder;
@@ -38,6 +46,45 @@ namespace DS18B20.Lib
         #endregion
 
         #region Methods
+
+        public void CopyTo(IDsDevice? device)
+        {
+            if (device == null)
+                return;
+
+            foreach (var measure in Measures)
+            {
+                IDsMeasure? m = device.FindMeasureById(measure.Id);
+
+                if(m != null) 
+                {
+                    measure.CopyTo(m);
+                }
+                else
+                {  
+                    device.Measures.Add(measure);
+                }
+            }
+        }
+
+        public IDsMeasure? FindMeasureById(string? id)
+        {
+            IDsMeasure? result = null;
+
+            if (string.IsNullOrEmpty(id))
+                return null;
+
+            foreach (var measure in Measures)
+            {
+                if (measure.Id == id)
+                {
+                    result = measure;
+                    break;
+                }
+            }
+
+            return result;
+        }
 
         public bool GetMeasure(out IDsMeasure? measure)
         {

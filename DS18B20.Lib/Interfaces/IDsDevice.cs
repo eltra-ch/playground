@@ -6,6 +6,8 @@
 
         List<IDsMeasure> Measures { get; set; }
 
+        void CopyTo(IDsDevice? device);
+        IDsMeasure? FindMeasureById(string? id);
         bool GetMeasure(out IDsMeasure? measure);
     }
 }

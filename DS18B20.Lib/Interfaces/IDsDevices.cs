@@ -2,8 +2,11 @@
 {
     public interface IDsDevices
     {
-        List<IDsDevice> ActiveDevices { get; }
+        List<IDsDevice> ActiveDevices { get; set; }
 
-        bool SerializeToJson();
+        bool Serialize(SerializeMethod method, out string target);
+
+        bool Deserialize(SerializeMethod method, string source, out DsDevices? devices);
+        IDsDevice? FindDeviceByName(string? name);
     }
 }

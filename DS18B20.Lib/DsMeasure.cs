@@ -1,6 +1,5 @@
 ﻿using DS18B20.Lib.Interfaces;
 using EltraCommon.Logger;
-using System.IO;
 using System.Text.Json.Serialization;
 
 namespace DS18B20.Lib
@@ -18,12 +17,25 @@ namespace DS18B20.Lib
             _directory = directory;
         }
 
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
         [JsonPropertyName("temperature")]
         public double Temperature { get; set; }
         [JsonPropertyName("unit")]
         public string Unit { get; set; } = "°C";
         [JsonPropertyName("created")]
         public DateTime Created { get; set; } = DateTime.Now;
+
+        public void CopyTo(IDsMeasure? measure)
+        {
+            if (measure == null)
+                return;
+
+            measure.Id = Id;
+            measure.Temperature = Temperature;
+            measure.Unit = Unit;
+            measure.Created = Created;
+        }
 
         public bool GetMeasure(string source)
         {
@@ -50,6 +62,7 @@ namespace DS18B20.Lib
 
                     MsgLogger.WriteDebug($"{GetType().Name} - {method}", $"source = '{source}', temperature = '{tempCel} °C'");
 
+                    Id = Guid.NewGuid().ToString();
                     Temperature = tempCel;
 
                     result = true;
