@@ -10,6 +10,7 @@ using DS18B20.Lib;
 using Unity;
 using DS18B20.UI;
 using System.Collections.Generic;
+using OxyPlot.Legends;
 
 namespace DS18UI
 {
@@ -108,6 +109,26 @@ namespace DS18UI
             _devices = unityContainer.Resolve<IDsDevices>();
         }
 
+        private string? GetLabel(string? deviceName)
+        {
+            string? result = deviceName;
+
+            switch (deviceName)
+            {
+                case "28-0000000d685c":
+                    result = $"lukarna, sciana - {deviceName}";
+                    break;
+                case "28-0000000d4b69":
+                    result = $"korytarz, drzwi - {deviceName}";
+                    break;
+                case "28-85d3431f64ff":
+                    result = $"lukarna - {deviceName}";
+                    break;
+            }
+
+            return result;
+        }
+
         private void CreateModel()
         {
             Task.Run(async () =>
@@ -117,10 +138,21 @@ namespace DS18UI
                 var model = new PlotModel { Title = "DS18B20", Subtitle = Settings1.Default.Url };
 
                 BuildSeries(model, devices);
-                
+
                 BuildAxes(model);
+                
+                BuildLegend(model);
 
                 this.Model = model;
+            });
+        }
+
+        private static void BuildLegend(PlotModel model)
+        {
+            model.Legends.Add(new Legend()
+            {
+                LegendTitle = "Devices",
+                LegendPosition = LegendPosition.LeftTop,
             });
         }
 
@@ -152,7 +184,7 @@ namespace DS18UI
                 {
                     var ls = new LineSeries()
                     {
-                        Title = device.Name,
+                        Title = GetLabel(device.Name),
                         MarkerType = MarkerType.Circle,
                         DataFieldX = "Created",
                         DataFieldY = "Temperature"
