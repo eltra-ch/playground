@@ -25,28 +25,37 @@ unityContainer.RegisterType<IDsMeasure, DsMeasure>();
 
 var devices = unityContainer.Resolve<IDsDevices>();
 
-string file = "data.txt";
+var arguments = Environment.GetCommandLineArgs();
 
-if (File.Exists(file))
+if (arguments.Length > 1)
 {
-    string content = File.ReadAllText(file);
+    string file = arguments[1];
 
-    if (devices.Deserialize(SerializeMethod.Json, content, out var d) && d != null)
+    if (File.Exists(file))
     {
-        d.CopyTo(devices);
-    }
-}
+        string content = File.ReadAllText(file);
 
-foreach(var device in devices.ActiveDevices)
+        if (devices.Deserialize(SerializeMethod.Json, content, out var d) && d != null)
+        {
+            d.CopyTo(devices);
+        }
+    }
+
+    foreach (var device in devices.ActiveDevices)
+    {
+        MsgLogger.WriteLine($"{name}", $"read device = '{device}'...");
+
+        if (device.GetMeasure(out var measure) && measure != null)
+        {
+            MsgLogger.WriteLine($"{name}", $"device = '{device.Name}', temperature = '{measure.Temperature} {measure.Unit}', time = {measure.Created}");
+        }
+    }
+
+    devices.Serialize(SerializeMethod.Json, out var target);
+
+    File.WriteAllText(file, target);
+}
+else
 {
-    MsgLogger.WriteLine($"{name}", $"read device = '{device}'...");
-
-    if (device.GetMeasure(out var measure) && measure != null)
-    {
-        MsgLogger.WriteLine($"{name}", $"device = '{device.Name}', temperature = '{measure.Temperature} {measure.Unit}', time = {measure.Created}");
-    }
+    MsgLogger.WriteError($"{name}", "missing target argument");
 }
-
-devices.Serialize(SerializeMethod.Json, out var target);
-
-File.WriteAllText(file, target);
