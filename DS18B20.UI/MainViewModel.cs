@@ -124,6 +124,9 @@ namespace DS18UI
                 case "28-85d3431f64ff":
                     result = $"lukarna - {deviceName}";
                     break;
+                case "28-0000000ca352":
+                    result = $"lazienka - {deviceName}";
+                    break;
             }
 
             return result;
